@@ -2,6 +2,7 @@
 # Project Part A: Single Player Infexion
 
 from .utils import render_board
+import math
 
 def search(input: dict[tuple, tuple]) -> list[tuple]:
     """
@@ -12,18 +13,32 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
 
     See the specification document for more details.
     """
+    minDistance = 100
     dic = {}
     newRed={}
+    action = []
     # it will iterate through every red dot
     for key, value in input.items():
         newRed[key] = value
         if value[0] == 'r':
             # it will iterate based on the power of the dot and add all possible move to dic
             for i in range(1, value[1] + 1):
-                print(key)
                 newRed = moveAll([key], i, input)
                 dic.update(newRed)
-    print(dic)
+        for key2, value2 in input.items():
+            for newKey, newValue in dic.items():
+                if value2[0] == 'b':
+                    distance = calculateDistance(key2[0], key2[1], newKey[0], newKey[1])
+                    if distance < minDistance:
+                        minDistance = distance
+                        minDistanceLocation = newKey
+                        minStartingLocation = key
+                        minDesiredLocation = key2
+        # reverse minDistanceLocation to get the direction of the spread
+        dir = reversedShift(minDistanceLocation, key, value)
+        #action.append((key[0], key[1], dir[0], dir[1]))
+    print(minDesiredLocation)
+    print(minStartingLocation)
 
     # The render_board function is useful for debugging -- it will print out a 
     # board state in a human-readable format. Try changing the ansi argument 
@@ -44,8 +59,6 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
 #Move a Red in all direction and output all the spread it will create
 def moveAll(red: tuple[int, int], k, input: dict[tuple, tuple]):
     newRed={}
-    print(k)
-    print(red)
     for key in red:
         newRed[(key[0], shift(key[1], k))] = ('r', 1)
         newRed[(shift(key[0], -k), shift(key[1], k))] = ('r', 1)
@@ -59,7 +72,6 @@ def moveAll(red: tuple[int, int], k, input: dict[tuple, tuple]):
                     newRed.pop(keyy)
                     newRed[keyx] = ('r', valuex[1] + 1)
                     break
-        print(newRed, "123")
     return newRed
 
 def shift(a, k):
@@ -81,7 +93,24 @@ def shift(a, k):
                 a = len(dim) -  1
     return a
 
+#reverse newKey to oldKey to get the direction of the spread
+def reversedShift(newKey, oldKey, oldValue):
+    for i in range(1, oldValue[1] + 1):
+        if (oldKey[0], shift(oldKey[1], i)) == newKey:
+            return (0, 1)
+        if (shift(oldKey[0], -i), shift(oldKey[1], i)) == newKey:
+            return (-1, 1)
+        if (shift(oldKey[0], -i), oldKey[1]) == newKey:
+            return (-1, 0)
+        if (oldKey[0], shift(oldKey[1], -i)) == newKey:
+            return (0, -1)
+        if (shift(oldKey[0], i), shift(oldKey[1], -i)) == newKey:
+            return (1, -1)
+        if (shift(oldKey[0], i), oldKey[1]) == newKey:
+            return (1, 0)
+    return 0
+
 #Calculate distance between 2 points
 def calculateDistance(x1, y1, x2, y2):
-    value = (((x1-x2)^(2)) + ((y1-y2)^(2)))^(1/2)
+    value = math.sqrt(pow((x2-x1),2) + pow((y2-y1), 2))
     return value
