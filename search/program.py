@@ -12,7 +12,6 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
 
     See the specification document for more details.
     """
-    min = 100
     dic = {}
     newRed={}
     # it will iterate through every red dot
@@ -20,10 +19,10 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
         newRed[key] = value
         if value[0] == 'r':
             # it will iterate based on the power of the dot and add all possible move to dic
-            for i in range(value[1]):
-                for keyx, valuex in newRed.items():
-                    newRed = moveAll([keyx], value[1], input)
-                    dic.update(newRed)
+            for i in range(1, value[1] + 1):
+                print(key)
+                newRed = moveAll([key], i, input)
+                dic.update(newRed)
     print(dic)
 
     # The render_board function is useful for debugging -- it will print out a 
@@ -45,19 +44,22 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
 #Move a Red in all direction and output all the spread it will create
 def moveAll(red: tuple[int, int], k, input: dict[tuple, tuple]):
     newRed={}
+    print(k)
+    print(red)
     for key in red:
-        newRed[(key[0], shift(key[1], 1))] = ('r', 1)
-        newRed[(shift(key[0], -1), shift(key[1], 1))] = ('r', 1)
-        newRed[(shift(key[0], -1), key[1])] = ('r', 1)
-        newRed[(key[0], shift(key[1], -1))] = ('r', 1)
-        newRed[(shift(key[0], 1), shift(key[1], -1))] = ('r', 1)
-        newRed[(shift(key[0], 1), key[1])] = ('r', 1)
+        newRed[(key[0], shift(key[1], k))] = ('r', 1)
+        newRed[(shift(key[0], -k), shift(key[1], k))] = ('r', 1)
+        newRed[(shift(key[0], -k), key[1])] = ('r', 1)
+        newRed[(key[0], shift(key[1], -k))] = ('r', 1)
+        newRed[(shift(key[0], k), shift(key[1], -k))] = ('r', 1)
+        newRed[(shift(key[0], k), key[1])] = ('r', 1)
         for keyx, valuex in input.items():
             for keyy, valuey in newRed.items():
                 if(keyx == keyy):
                     newRed.pop(keyy)
                     newRed[keyx] = ('r', valuex[1] + 1)
                     break
+        print(newRed, "123")
     return newRed
 
 def shift(a, k):
@@ -69,13 +71,14 @@ def shift(a, k):
         else:
             if b > 0:
                 b = b - 1
+                a = a + 1
             if b < 0:
                 b = b + 1
-            a = a + k
+                a = a - 1
             if a > len(dim) - 1:
                 a = 0
             if a < 0:
-                a = len(dim)
+                a = len(dim) -  1
     return a
 
 #Calculate distance between 2 points
