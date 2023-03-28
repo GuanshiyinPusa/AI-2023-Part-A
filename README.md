@@ -1,2 +1,3 @@
 # AI-2023
 COMP30024-AI
+We decided to use a greedy search. In the problem, we have the same cost path which make greedy search the same as A* search. This will allow us to have time complexity of A* search. For the first loop, we will loop through all red nodes to find all possible paths. We will loop through all these paths to find which one is the nearest to one of the blue node. We will then use greedy search with heuristic of the shortest distance to find the best possible path to get to the nearest blue. After getting a blue, we will expand this new captured node and compare with the distance from the first loop distance and repeat the rest.
