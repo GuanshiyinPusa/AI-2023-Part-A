@@ -15,31 +15,52 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
     """
     minDistance = 100
     dic = {}
+    subDic={}
     newRed={}
     action = []
+    blueNodes = 0
     # it will iterate through every red dot
     for key, value in input.items():
         newRed[key] = value
+        if value[0] == 'b':
+            blueNodes = blueNodes + 1
         if value[0] == 'r':
             # it will iterate based on the power of the dot and add all possible move to dic
             for i in range(1, value[1] + 1):
                 newRed = moveAll([key], i, input)
                 dic.update(newRed)
-        for key2, value2 in input.items():
-            for newKey, newValue in dic.items():
-                if value2[0] == 'b':
-                    distance = calculateDistance(key2[0], key2[1], newKey[0], newKey[1])
-                    if distance < minDistance:
-                        minDistance = distance
-                        minDistanceLocation = newKey
-                        minStartingLocation = key
-                        minDesiredLocation = key2
-        # reverse minDistanceLocation to get the direction of the spread
-        dir = reversedShift(minDistanceLocation, key, value)
-        #action.append((key[0], key[1], dir[0], dir[1]))
-    print(minDesiredLocation)
-    print(minStartingLocation)
-
+            for key2, value2 in input.items():
+                for newKey, newValue in dic.items():
+                    if value2[0] == 'b':
+                        distance = calculateDistance(key2[0], key2[1], newKey[0], newKey[1])
+                        if distance < minDistance:
+                            minDistance = distance
+                            minDistanceLocation = newKey
+                            minStartingLocation = (key, value)
+                            minDesiredLocation = key2
+            # reverse minDistanceLocation to get the direction of the spread
+            dir = reversedShift(minDistanceLocation, key, value)
+            print(minDistanceLocation, "00")
+            print(dir, "13")
+    currentBlueNodes = 1
+    subMinDistance = 100
+    while currentBlueNodes != 0:
+        for i in range(1, minStartingLocation[1][1] + 1):
+            subRedNodes = moveAll([minStartingLocation[0]], i, input)
+            subDic.update(subRedNodes)
+        for key, value in subRedNodes.items():
+            subDistance = calculateDistance(key[0], key[1], minDesiredLocation[0], minDesiredLocation[1])
+            if subDistance < subMinDistance:
+                subMinDistance = subDistance
+                subMinDistanceLocation = key
+                subMinStartingLocation = (key, value)
+        dir = reversedShift(subMinDistanceLocation, minStartingLocation[0], minStartingLocation[1])
+        action.append((minStartingLocation[0][0], minStartingLocation[0][1], dir[0], dir[1]))
+        print(action)
+        minStartingLocation = subMinStartingLocation
+        if minStartingLocation[0] == minDesiredLocation:
+            currentBlueNodes = currentBlueNodes - 1
+    print(subDic, "88")
     # The render_board function is useful for debugging -- it will print out a 
     # board state in a human-readable format. Try changing the ansi argument 
     # to True to see a colour-coded version (if your terminal supports it).
