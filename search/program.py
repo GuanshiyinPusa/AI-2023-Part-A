@@ -28,7 +28,6 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
         dic = {}
         subDic={}
         newRed={}
-        print(input, "input")
         for keyInput, valueInput in input.items():
             newRed[keyInput] = valueInput
             if valueInput[0] == 'r':
@@ -46,8 +45,6 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
                                 minStartingLocation = (keyInput, valueInput)
                                 start = minStartingLocation[0]
                                 minDesiredLocation = key2
-                                print("minS", minStartingLocation)
-                                print("minD", minDesiredLocation)
         currentBlueNodes = 1
         subMinDistance = 100
         newNodes = {}
@@ -61,7 +58,6 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
                     subMinDistance = subDistance
                     subMinDistanceLocation = keySubRedNodes
                     subMinStartingLocation = (keySubRedNodes, valueSubRedNodes)
-                    print(subMinDistanceLocation,subMinStartingLocation, "submin")
             dir = reversedShift(subMinDistanceLocation, minStartingLocation[0], minStartingLocation[1])
             #need to use start location then use direction to record all notes that is created
             newNodes.update(moveInDirection((minStartingLocation[0][0], minStartingLocation[0][1], dir[0], dir[1]), minStartingLocation[1][1], input))
@@ -104,7 +100,6 @@ def moveInDirection(action: tuple[int, int, int, int], k, input: dict[tuple, tup
             newRed[(shift(action[0], i), shift(action[1], -i))] = ('r', 1)
         if action[2] == 1 and action[3] == 0:
             newRed[(shift(action[0], i), action[1])] = ('r', 1)
-            print(newRed, "newRed")
         newRed2.update(newRed)
         newRedList = list(newRed.keys())
         list(action)[0] = newRedList[0][0]
