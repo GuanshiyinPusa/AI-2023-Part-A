@@ -13,32 +13,66 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
 
     See the specification document for more details.
     """
+    blueNodes = 0
+    for keyInput, valueInput in input.items():
+        if valueInput[0] == 'b':
+            blueNodes = blueNodes + 1
     minDistance = 100
     dic = {}
+    subDic={}
     newRed={}
     action = []
     # it will iterate through every red dot
-    for key, value in input.items():
-        newRed[key] = value
-        if value[0] == 'r':
-            # it will iterate based on the power of the dot and add all possible move to dic
-            for i in range(1, value[1] + 1):
-                newRed = moveAll([key], i, input)
-                dic.update(newRed)
-        for key2, value2 in input.items():
-            for newKey, newValue in dic.items():
-                if value2[0] == 'b':
-                    distance = calculateDistance(key2[0], key2[1], newKey[0], newKey[1])
-                    if distance < minDistance:
-                        minDistance = distance
-                        minDistanceLocation = newKey
-                        minStartingLocation = key
-                        minDesiredLocation = key2
-        # reverse minDistanceLocation to get the direction of the spread
-        dir = reversedShift(minDistanceLocation, key, value)
-        #action.append((key[0], key[1], dir[0], dir[1]))
-    print(minDesiredLocation)
-    print(minStartingLocation)
+    while blueNodes > 0:
+        minDistance = 100
+        dic = {}
+        subDic={}
+        newRed={}
+        for keyInput, valueInput in input.items():
+            newRed[keyInput] = valueInput
+            if valueInput[0] == 'r':
+                # it will iterate based on the power of the dot and add all possible move to dic
+                for i in range(1, valueInput[1] + 1):
+                    newRed = moveAll([keyInput], i, input)
+                    dic.update(newRed)
+                for key2, value2 in input.items():
+                    for newKey, newValue in dic.items():
+                        if value2[0] == 'b':
+                            distance = calculateDistance(key2[0], key2[1], newKey[0], newKey[1])
+                            if distance < minDistance:
+                                minDistance = distance
+                                minDistanceLocation = newKey
+                                minStartingLocation = (keyInput, valueInput)
+                                start = minStartingLocation[0]
+                                minDesiredLocation = key2
+        currentBlueNodes = 1
+        subMinDistance = 100
+        newNodes = {}
+        while currentBlueNodes != 0:
+            for i in range(1, minStartingLocation[1][1] + 1):
+                subRedNodes = moveAll([minStartingLocation[0]], i, input)
+                subDic.update(subRedNodes)
+            for keySubRedNodes, valueSubRedNodes in subDic.items():
+                subDistance = calculateDistance(keySubRedNodes[0], keySubRedNodes[1], minDesiredLocation[0], minDesiredLocation[1])
+                if subDistance < subMinDistance:
+                    subMinDistance = subDistance
+                    subMinDistanceLocation = keySubRedNodes
+                    subMinStartingLocation = (keySubRedNodes, valueSubRedNodes)
+            dir = reversedShift(subMinDistanceLocation, minStartingLocation[0], minStartingLocation[1])
+            #need to use start location then use direction to record all notes that is created
+            newNodes.update(moveInDirection((minStartingLocation[0][0], minStartingLocation[0][1], dir[0], dir[1]), minStartingLocation[1][1], input))
+            action.append((minStartingLocation[0][0], minStartingLocation[0][1], dir[0], dir[1]))
+            for i in action:
+                for newNodesKey in newNodes:
+                    if i[0] == newNodesKey[0] and i[1] == newNodesKey[1]:
+                        newNodes.pop(newNodesKey)
+                        break
+            minStartingLocation = subMinStartingLocation
+            if minStartingLocation[0] == minDesiredLocation:
+                currentBlueNodes = currentBlueNodes - 1
+                blueNodes = blueNodes - 1
+        input.pop(start)
+        input.update(newNodes)
 
     # The render_board function is useful for debugging -- it will print out a 
     # board state in a human-readable format. Try changing the ansi argument 
@@ -48,13 +82,35 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
 
     # Here we're returning "hardcoded" actions for the given test.csv file.
     # Of course, you'll need to replace this with an actual solution...
-    return [
-        (5, 6, -1, 1),
-        (3, 1, 0, 1),
-        (3, 2, -1, 1),
-        (1, 4, 0, -1),
-        (1, 3, 0, -1)
-    ]
+    return action
+
+def moveInDirection(action: tuple[int, int, int, int], k, input: dict[tuple, tuple]):
+    newRed = {}
+    newRed2 = {}
+    for i in range(1, k + 1):
+        if action[2] == 0 and action[3] == 1:
+            newRed[(action[0], shift(action[1], i))] = ('r', 1)
+        if action[2] == -1 and action[3] == 1:
+            newRed[(shift(action[0], -i), shift(action[1], i))] = ('r', 1)
+        if action[2] == -1 and action[3] == 0:
+            newRed[(shift(action[0], -i), action[1])] = ('r', 1)
+        if action[2] == 0 and action[3] == -1:
+            newRed[(action[0], shift(action[1], -i))] = ('r', 1)
+        if action[2] == 1 and action[3] == -1:
+            newRed[(shift(action[0], i), shift(action[1], -i))] = ('r', 1)
+        if action[2] == 1 and action[3] == 0:
+            newRed[(shift(action[0], i), action[1])] = ('r', 1)
+        newRed2.update(newRed)
+        newRedList = list(newRed.keys())
+        list(action)[0] = newRedList[0][0]
+        list(action)[1] = newRedList[0][1]
+        for keyx, valuex in input.items():
+            for keyy, valuey in newRed2.items():
+                if(keyx == keyy):
+                    newRed2.pop(keyy)
+                    newRed2[keyx] = ('r', valuex[1] + 1)
+                    break
+    return newRed2
 
 #Move a Red in all direction and output all the spread it will create
 def moveAll(red: tuple[int, int], k, input: dict[tuple, tuple]):
