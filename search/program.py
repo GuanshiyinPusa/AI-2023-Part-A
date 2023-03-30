@@ -13,6 +13,7 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
 
     See the specification document for more details.
     """
+    # Check for initial blue nodes from the board
     blueNodes = 0
     for keyInput, valueInput in input.items():
         if valueInput[0] == 'b':
@@ -22,19 +23,22 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
     subDic={}
     newRed={}
     action = []
+    NewblueNodes = blueNodes
     # it will iterate through every red dot
-    while blueNodes > 0:
+    while NewblueNodes > 0:
         minDistance = 100
         dic = {}
         subDic={}
         newRed={}
+        enemyPower = 0
         for keyInput, valueInput in input.items():
             newRed[keyInput] = valueInput
             if valueInput[0] == 'r':
-                # it will iterate based on the power of the dot and add all possible move to dic
+                # it will iterate based on the power of the nodes and add all possible move to dic
                 for i in range(1, valueInput[1] + 1):
                     newRed = moveAll([keyInput], i, input)
                     dic.update(newRed)
+                # Save a blue node and a red node that is nearest to each other
                 for key2, value2 in input.items():
                     for newKey, newValue in dic.items():
                         if value2[0] == 'b':
@@ -45,9 +49,20 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
                                 minStartingLocation = (keyInput, valueInput)
                                 start = minStartingLocation[0]
                                 minDesiredLocation = key2
+                            # if there are two nodes that have same distance then record the highest power blue node to capture first
+                            if distance == minDistance and value2[1] > enemyPower:
+                                print(value2[1])
+                                minDistance = distance
+                                minDistanceLocation = newKey
+                                minStartingLocation = (keyInput, valueInput)
+                                start = minStartingLocation[0]
+                                minDesiredLocation = key2
+                                enemyPower = value2[1]
+        print(minDesiredLocation)
         currentBlueNodes = 1
         subMinDistance = 100
         newNodes = {}
+        # doing greedy search for the red and blue node we recorded earlier
         while currentBlueNodes != 0:
             for i in range(1, minStartingLocation[1][1] + 1):
                 subRedNodes = moveAll([minStartingLocation[0]], i, input)
@@ -59,7 +74,7 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
                     subMinDistanceLocation = keySubRedNodes
                     subMinStartingLocation = (keySubRedNodes, valueSubRedNodes)
             dir = reversedShift(subMinDistanceLocation, minStartingLocation[0], minStartingLocation[1])
-            #need to use start location then use direction to record all notes that is created
+            # need to use start location then use direction to record all notes that is created
             newNodes.update(moveInDirection((minStartingLocation[0][0], minStartingLocation[0][1], dir[0], dir[1]), minStartingLocation[1][1], input))
             action.append((minStartingLocation[0][0], minStartingLocation[0][1], dir[0], dir[1]))
             for i in action:
@@ -71,8 +86,14 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
             if minStartingLocation[0] == minDesiredLocation:
                 currentBlueNodes = currentBlueNodes - 1
                 blueNodes = blueNodes - 1
+        # add in all the new red nodes we created to input
         input.pop(start)
         input.update(newNodes)
+        NewblueNodes = 0
+        # check for all the blueNodes that is left
+        for key, value in input.items():
+            if value[0] == 'b':
+                NewblueNodes = NewblueNodes + 1
 
     # The render_board function is useful for debugging -- it will print out a 
     # board state in a human-readable format. Try changing the ansi argument 
