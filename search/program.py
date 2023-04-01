@@ -51,14 +51,12 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
                                 minDesiredLocation = key2
                             # if there are two nodes that have same distance then record the highest power blue node to capture first
                             if distance == minDistance and value2[1] > enemyPower:
-                                print(value2[1])
                                 minDistance = distance
                                 minDistanceLocation = newKey
                                 minStartingLocation = (keyInput, valueInput)
                                 start = minStartingLocation[0]
                                 minDesiredLocation = key2
                                 enemyPower = value2[1]
-        print(minDesiredLocation)
         currentBlueNodes = 1
         subMinDistance = 100
         newNodes = {}
@@ -105,6 +103,7 @@ def search(input: dict[tuple, tuple]) -> list[tuple]:
     # Of course, you'll need to replace this with an actual solution...
     return action
 
+# Move in a certain direction
 def moveInDirection(action: tuple[int, int, int, int], k, input: dict[tuple, tuple]):
     newRed = {}
     newRed2 = {}
